@@ -1,8 +1,7 @@
 import cv2
 import time
-import swiftclient
-import numpy
-import PIL
+# import swiftclient
+import redis
 
 def upload_to_swift(swift, contain_name, file_name):
     #Upload the object
@@ -43,6 +42,7 @@ class VideoCamera(object):
         # so we must encode it into JPEG in order to correctly display the
         # video stream.
         ret, jpeg = cv2.imencode('.jpg', image)
+        self.redis_save(jpeg)
         return jpeg.tobytes()
 
     def save_image(self):
@@ -54,3 +54,8 @@ class VideoCamera(object):
         print type(image)
         s = get_in_swift()
         s = upload_to_swift(s, 'clyde_contain02', fileName)
+
+    def redis_save(self, jpegImage):
+        redisImageName =  'imagedata'
+        r = redis.StrictRedis(host='localhost')
+        r.set(redisImageName, jpegImage)
